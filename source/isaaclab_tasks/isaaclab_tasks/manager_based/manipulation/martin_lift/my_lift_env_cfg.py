@@ -30,7 +30,7 @@ from . import mdp
 
 @configclass
 class ObjectTableSceneCfg(InteractiveSceneCfg):
-    """Configuration for the lift scene with a robot and a object.
+    """Configuration for the lift scene with a robot and balls with different colors.
     This is the abstract base implementation, the exact scene is defined in the derived classes
     which need to set the target object, robot and end-effector frames
     """
@@ -40,9 +40,8 @@ class ObjectTableSceneCfg(InteractiveSceneCfg):
     # end-effector sensor: will be populated by agent env cfg
     ee_frame: FrameTransformerCfg = MISSING
     # target object: will be populated by agent env cfg
-    object: RigidObjectCfg | DeformableObjectCfg = MISSING
-
-
+    red_ball: RigidObjectCfg | DeformableObjectCfg = MISSING
+    green_ball: RigidObjectCfg | DeformableObjectCfg = MISSING
     # Table
     table = AssetBaseCfg(
         prim_path="{ENV_REGEX_NS}/Table",
