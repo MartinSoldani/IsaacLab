@@ -120,6 +120,7 @@ class RigidObject(AssetBase):
                 is_global=False,
             )
 
+    # TODO: I MIGHT CHANGE THIS TO data instead of _data to see whether it fixes  : 
     def update(self, dt: float):
         self._data.update(dt)
 

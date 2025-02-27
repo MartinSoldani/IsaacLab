@@ -126,7 +126,7 @@ class EventCfg:
         params={
             "pose_range": {"x": (-0.1, 0.1), "y": (-0.25, 0.25), "z": (0.0, 0.0)},
             "velocity_range": {},
-            "asset_cfg": SceneEntityCfg("object", body_names="Object"),
+            "asset_cfg": SceneEntityCfg("red_ball", body_names="Cube"),
         },
     )
 
@@ -168,7 +168,7 @@ class TerminationsCfg:
     time_out = DoneTerm(func=mdp.time_out, time_out=True)
 
     object_dropping = DoneTerm(
-        func=mdp.root_height_below_minimum, params={"minimum_height": -0.05, "asset_cfg": SceneEntityCfg("object")}
+        func=mdp.root_height_below_minimum, params={"minimum_height": -0.05, "asset_cfg": SceneEntityCfg("red_ball")}
     )
 
 

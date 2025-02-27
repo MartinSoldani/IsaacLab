@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
 
 def object_is_lifted(
-    env: ManagerBasedRLEnv, minimal_height: float, object_cfg: SceneEntityCfg = SceneEntityCfg("object")
+    env: ManagerBasedRLEnv, minimal_height: float, object_cfg: SceneEntityCfg = SceneEntityCfg("red_ball")
 ) -> torch.Tensor:
     """Reward the agent for lifting the object above the minimal height."""
     object: RigidObject = env.scene[object_cfg.name]
@@ -28,7 +28,7 @@ def object_is_lifted(
 def object_ee_distance(
     env: ManagerBasedRLEnv,
     std: float,
-    object_cfg: SceneEntityCfg = SceneEntityCfg("object"),
+    object_cfg: SceneEntityCfg = SceneEntityCfg("red_ball"),
     ee_frame_cfg: SceneEntityCfg = SceneEntityCfg("ee_frame"),
 ) -> torch.Tensor:
     """Reward the agent for reaching the object using tanh-kernel."""
@@ -51,7 +51,7 @@ def object_goal_distance(
     minimal_height: float,
     command_name: str,
     robot_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
-    object_cfg: SceneEntityCfg = SceneEntityCfg("object"),
+    object_cfg: SceneEntityCfg = SceneEntityCfg("red_ball"),
 ) -> torch.Tensor:
     """Reward the agent for tracking the goal pose using tanh-kernel."""
     # extract the used quantities (to enable type-hinting)
