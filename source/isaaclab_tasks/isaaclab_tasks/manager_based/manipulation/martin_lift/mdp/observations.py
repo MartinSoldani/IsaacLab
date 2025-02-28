@@ -19,14 +19,14 @@ if TYPE_CHECKING:
 def object_position_in_robot_root_frame(
     env: ManagerBasedRLEnv,
     robot_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
-    red_ball_cfg: SceneEntityCfg = SceneEntityCfg("red_ball")
+    red_cube_cfg: SceneEntityCfg = SceneEntityCfg("red_cube")
 
 ) -> torch.Tensor:
     # TODO: change this to take in CLIP
     """The position of the object in the robot's root frame."""
     robot: RigidObject = env.scene[robot_cfg.name]
-    red_ball: RigidObject = env.scene[red_ball_cfg.name]
-    object_pos_w = red_ball.data.root_pos_w[:, :3]
+    red_cube: RigidObject = env.scene[red_cube_cfg.name]
+    object_pos_w = red_cube.data.root_pos_w[:, :3]
     object_pos_b, _ = subtract_frame_transforms(
         robot.data.root_state_w[:, :3], robot.data.root_state_w[:, 3:7], object_pos_w
     )

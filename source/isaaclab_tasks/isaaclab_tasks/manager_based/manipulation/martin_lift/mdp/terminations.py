@@ -27,7 +27,7 @@ def object_reached_goal(
     command_name: str = "object_pose",
     threshold: float = 0.02,
     robot_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
-    object_cfg: SceneEntityCfg = SceneEntityCfg("red_ball"),
+    object_cfg: SceneEntityCfg = SceneEntityCfg("red_cube"),
 ) -> torch.Tensor:
     """Termination condition for the object reaching the goal position.
 

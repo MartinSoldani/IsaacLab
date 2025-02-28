@@ -45,35 +45,38 @@ class FrankaCubeLiftEnvCfg(LiftEnvCfg):
         # Set the body name for the end effector
         self.commands.object_pose.body_name = "panda_hand"
 
-        # 🔹 Generate random positions for the balls (ensuring they do not overlap)
-        min_distance = 0.15  # Minimum allowed distance between balls
-        max_attempts = 50
+        # TODO NOT NEEDED RIGHT NOW # Generate random positions for the cubes (ensuring they do not overlap)
+        # min_distance = 0.15  # Minimum allowed distance between cubes
+        # max_attempts = 50
 
-        for _ in range(max_attempts):
-            red_ball_position = [
-                random.uniform(0.3, 0.7),
-                random.uniform(-0.25, 0.25),
-                0.055,
-            ]
-            green_ball_position = [
-                random.uniform(0.3, 0.7),
-                random.uniform(-0.25, 0.25),
-                0.055,
-            ]
+        # for _ in range(max_attempts):
+        #     red_cube_position = [
+        #         random.uniform(0.3, 0.7),
+        #         random.uniform(-0.25, 0.25),
+        #         0.055,
+        #     ]
+        #     green_cube_position = [
+        #         random.uniform(0.3, 0.7),
+        #         random.uniform(-0.25, 0.25),
+        #         0.055,
+        #     ]
 
-            # Ensure they are not too close
-            if np.linalg.norm(np.array(red_ball_position[:2]) - np.array(green_ball_position[:2])) >= min_distance:
-                break
-        else:
-            raise ValueError("Failed to generate non-overlapping ball positions after many attempts!")
+        #     # Ensure they are not too close
+        #     if np.linalg.norm(np.array(red_cube_position[:2]) - np.array(green_cube_position[:2])) >= min_distance:
+        #         break
+        # else:
+        #     raise ValueError("Failed to generate non-overlapping cube positions after many attempts!")
 
-        # 🔹 Define the Red Ball (as its own object)
-        self.scene.red_ball = RigidObjectCfg(
-            prim_path="{ENV_REGEX_NS}/RedBall",
-            init_state=RigidObjectCfg.InitialStateCfg(pos=red_ball_position, rot=[1, 0, 0, 0]),
+        red_cube_position = (0.6, -0.2, 0.055)
+        green_cube_position = (0.6, 0.2, 0.055)
+
+        # Define the Red cube (as its own object)
+        self.scene.red_cube = RigidObjectCfg(
+            prim_path="{ENV_REGEX_NS}/RedCube",
+            init_state=RigidObjectCfg.InitialStateCfg(pos=red_cube_position, rot=[1, 0, 0, 0]),
             spawn=UsdFileCfg(
-                usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/Shapes/ball.usd",
-                scale=(0.2, 0.2, 0.2),
+                usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/Blocks/red_block.usd",
+                scale=(1, 1, 1),
                 rigid_props=RigidBodyPropertiesCfg(
                     solver_position_iteration_count=16,
                     solver_velocity_iteration_count=1,
@@ -85,13 +88,13 @@ class FrankaCubeLiftEnvCfg(LiftEnvCfg):
             ),
         )
 
-        # 🔹 Define the Green Ball (as its own object)
-        self.scene.green_ball = RigidObjectCfg(
-            prim_path="{ENV_REGEX_NS}/GreenBall",
-            init_state=RigidObjectCfg.InitialStateCfg(pos=green_ball_position, rot=[1, 0, 0, 0]),
+        # Define the Green cube (as its own object)
+        self.scene.green_cube = RigidObjectCfg(
+            prim_path="{ENV_REGEX_NS}/GreenCube",
+            init_state=RigidObjectCfg.InitialStateCfg(pos=green_cube_position, rot=[1, 0, 0, 0]),
             spawn=UsdFileCfg(
-                usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/Shapes/ball.usd",
-                scale=(0.2, 0.2, 0.2),
+                usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/Blocks/green_block.usd",
+                scale=(1, 1, 1),
                 rigid_props=RigidBodyPropertiesCfg(
                     solver_position_iteration_count=16,
                     solver_velocity_iteration_count=1,
@@ -101,7 +104,7 @@ class FrankaCubeLiftEnvCfg(LiftEnvCfg):
                     disable_gravity=False,
                 ),
             ),
-        )
+        )   
 
         # Listens to the required transforms
         marker_cfg = FRAME_MARKER_CFG.copy()

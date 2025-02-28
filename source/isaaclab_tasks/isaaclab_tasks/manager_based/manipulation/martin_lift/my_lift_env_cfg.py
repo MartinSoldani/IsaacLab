@@ -30,7 +30,7 @@ from . import mdp
 
 @configclass
 class ObjectTableSceneCfg(InteractiveSceneCfg):
-    """Configuration for the lift scene with a robot and balls with different colors.
+    """Configuration for the lift scene with a robot and cubes with different colors.
     This is the abstract base implementation, the exact scene is defined in the derived classes
     which need to set the target object, robot and end-effector frames
     """
@@ -40,8 +40,8 @@ class ObjectTableSceneCfg(InteractiveSceneCfg):
     # end-effector sensor: will be populated by agent env cfg
     ee_frame: FrameTransformerCfg = MISSING
     # target object: will be populated by agent env cfg
-    red_ball: RigidObjectCfg | DeformableObjectCfg = MISSING
-    green_ball: RigidObjectCfg | DeformableObjectCfg = MISSING
+    red_cube: RigidObjectCfg | DeformableObjectCfg = MISSING
+    green_cube: RigidObjectCfg | DeformableObjectCfg = MISSING
     # Table
     table = AssetBaseCfg(
         prim_path="{ENV_REGEX_NS}/Table",
@@ -124,9 +124,9 @@ class EventCfg:
         func=mdp.reset_root_state_uniform,
         mode="reset",
         params={
-            "pose_range": {"x": (-0.1, 0.1), "y": (-0.25, 0.25), "z": (0.0, 0.0)},
+            "pose_range": {"x": (0.0, 0.0), "y": (0.0, 0.0), "z": (0.0, 0.0)},
             "velocity_range": {},
-            "asset_cfg": SceneEntityCfg("red_ball", body_names="Cube"),
+            "asset_cfg": SceneEntityCfg("red_cube", body_names="Cube"),
         },
     )
 
@@ -168,7 +168,7 @@ class TerminationsCfg:
     time_out = DoneTerm(func=mdp.time_out, time_out=True)
 
     object_dropping = DoneTerm(
-        func=mdp.root_height_below_minimum, params={"minimum_height": -0.05, "asset_cfg": SceneEntityCfg("red_ball")}
+        func=mdp.root_height_below_minimum, params={"minimum_height": -0.05, "asset_cfg": SceneEntityCfg("red_cube")}
     )
 
 

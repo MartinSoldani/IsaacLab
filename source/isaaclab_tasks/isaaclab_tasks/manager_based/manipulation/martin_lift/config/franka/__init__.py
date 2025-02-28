@@ -16,10 +16,10 @@ from . import agents
 ##
 
 gym.register(
-    id="Isaac-Lift-Ball-Franka-v0",
+    id="Isaac-Lift-Cube-Franka-v0",
     entry_point="isaaclab.envs:ManagerBasedRLEnv",
     kwargs={
-        "env_cfg_entry_point": f"{__name__}.my_joint_pos_env_cfg:FrankaBallLiftEnvCfg",
+        "env_cfg_entry_point": f"{__name__}.my_joint_pos_env_cfg:FrankaCubeLiftEnvCfg",
         "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:LiftCubePPORunnerCfg",
         "skrl_cfg_entry_point": f"{agents.__name__}:skrl_ppo_cfg.yaml",
         "rl_games_cfg_entry_point": f"{agents.__name__}:rl_games_ppo_cfg.yaml",
