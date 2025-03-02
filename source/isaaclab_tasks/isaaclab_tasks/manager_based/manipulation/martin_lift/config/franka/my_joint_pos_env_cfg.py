@@ -93,7 +93,7 @@ class FrankaCubeLiftEnvCfg(LiftEnvCfg):
             prim_path="{ENV_REGEX_NS}/GreenCube",
             init_state=RigidObjectCfg.InitialStateCfg(pos=green_cube_position, rot=[1, 0, 0, 0]),
             spawn=UsdFileCfg(
-                usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/Blocks/green_block.usd",
+                usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/Blocks/blue_block.usd",
                 scale=(1, 1, 1),
                 rigid_props=RigidBodyPropertiesCfg(
                     solver_position_iteration_count=16,
@@ -113,7 +113,6 @@ class FrankaCubeLiftEnvCfg(LiftEnvCfg):
         self.scene.ee_frame = FrameTransformerCfg(
             prim_path="{ENV_REGEX_NS}/Robot/panda_link0",
             debug_vis=False,
-            visualizer_cfg=marker_cfg,
             target_frames=[
                 FrameTransformerCfg.FrameCfg(
                     prim_path="{ENV_REGEX_NS}/Robot/panda_hand",

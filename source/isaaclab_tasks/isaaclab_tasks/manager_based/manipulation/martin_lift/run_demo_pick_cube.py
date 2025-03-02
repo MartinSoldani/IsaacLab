@@ -1,68 +1,92 @@
-# run_simulation.py
+# Copyright (c) 2022-2025, The Isaac Lab Project Developers.
+# All rights reserved.
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
+"""Script to an environment with random action agent."""
+
+"""Launch Isaac Sim Simulator first."""
 
 import argparse
-import torch
-from isaaclab.app import AppLauncher
-import isaaclab.sim as sim_utils
-from isaaclab.envs import gym
-from isaaclab.scene import InteractiveScene
 
-# 1️⃣ Launch Omniverse simulator
-parser = argparse.ArgumentParser(description="Standalone simulation for cube picking environment")
-parser.add_argument("--num_envs", type=int, default=2, help="Number of environments to spawn.")
+from isaaclab.app import AppLauncher
+
+# add argparse arguments
+parser = argparse.ArgumentParser(description="Random agent for Isaac Lab environments.")
+parser.add_argument(
+    "--disable_fabric", action="store_true", default=False, help="Disable fabric and use USD I/O operations."
+)
+parser.add_argument("--num_envs", type=int, default=None, help="Number of environments to simulate.")
+parser.add_argument("--task", type=str, default=None, help="Name of the task.")
+# append AppLauncher cli args
 AppLauncher.add_app_launcher_args(parser)
+# parse the arguments
 args_cli = parser.parse_args()
 
+# launch omniverse app
 app_launcher = AppLauncher(args_cli)
 simulation_app = app_launcher.app
 
-# 2️⃣ Load the environment
-env = gym.make("Isaac-Lift-Cube-Franka-v0", render_mode="rgb_array")
-scene = env.scene  # Access the scene (robot, cubes, camera, etc.)
-sim = env.sim  # Get simulation context
+"""Rest everything follows."""
 
-# 3️⃣ Simulation Loop
-def run_simulator(sim, scene):
-    """Runs the Isaac Sim environment interactively."""
-    sim_dt = sim.get_physics_dt()
-    sim_time = 0.0
-    count = 0
+import gymnasium as gym
+import torch
 
+import isaaclab_tasks  # noqa: F401
+from isaaclab_tasks.utils import parse_env_cfg
+
+
+def main():
+    """Random actions agent with Isaac Lab environment."""
+    # create environment configuration
+    env_cfg = parse_env_cfg(
+        args_cli.task, device=args_cli.device, num_envs=args_cli.num_envs, use_fabric=not args_cli.disable_fabric
+    )
+    # create environment
+    env = gym.make(args_cli.task, cfg=env_cfg)
+
+    # print info (this is vectorized environment)
+    print(f"[INFO]: Gym observation space: {env.observation_space}")
+    print(f"[INFO]: Gym action space: {env.action_space}")
+    # reset environment
+    env.reset()
+    # simulate environment
     while simulation_app.is_running():
-        # Reset every 500 steps
-        if count % 500 == 0:
-            count = 0
-            print("[INFO]: Resetting environment...")
-            scene.reset()
+        # run everything in inference mode
+        with torch.inference_mode():
+            # sample actions from -1 to 1
+            actions = 2 * torch.rand(env.action_space.shape, device=env.unwrapped.device) - 1
+            # apply actions
+            env.step(actions)
+            #     # Print sensor data for debugging
+            # print("\n-------------------------------")
+            # print("Camera Data:")
+            # print("RGB Image Shape: ", scene["camera"].data.output["rgb"].shape)
+            # print("Depth Image Shape: ", scene["camera"].data.output["distance_to_image_plane"].shape)
+            # print("-------------------------------")
 
-        # Move the robot using default joint positions
-        targets = scene["robot"].data.default_joint_pos
-        scene["robot"].set_joint_position_target(targets)
-        scene.write_data_to_sim()
+            # print("Height Scanner:")
+            # print("Max Height Value: ", torch.max(scene["height_scanner"].data.ray_hits_w[..., -1]).item())
+            # print("-------------------------------")
 
-        # Step simulation
-        sim.step()
-        sim_time += sim_dt
-        count += 1
-        scene.update(sim_dt)
+            # print("Contact Forces:")
+            # print("Max Contact Force: ", torch.max(scene["contact_forces"].data.net_forces_w).item())
+            # print("-------------------------------")
+            
+    # close the simulator
+    env.close()
 
-        # Print sensor data for debugging
-        print("\n-------------------------------")
-        print("Camera Data:")
-        print("RGB Image Shape: ", scene["camera"].data.output["rgb"].shape)
-        print("Depth Image Shape: ", scene["camera"].data.output["distance_to_image_plane"].shape)
-        print("-------------------------------")
 
-        print("Height Scanner:")
-        print("Max Height Value: ", torch.max(scene["height_scanner"].data.ray_hits_w[..., -1]).item())
-        print("-------------------------------")
+if __name__ == "__main__":
+    # run the main function
+    main()
+    # close sim app
+    simulation_app.close()
 
-        print("Contact Forces:")
-        print("Max Contact Force: ", torch.max(scene["contact_forces"].data.net_forces_w).item())
-        print("-------------------------------")
 
-# 4️⃣ Run Simulation
-run_simulator(sim, scene)
 
-# 5️⃣ Cleanup
-env.close()
+
+
+
+
+

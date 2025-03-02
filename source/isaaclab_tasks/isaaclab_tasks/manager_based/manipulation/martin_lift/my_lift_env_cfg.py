@@ -47,6 +47,7 @@ class ObjectTableSceneCfg(InteractiveSceneCfg):
     # target object: will be populated by agent env cfg
     red_cube: RigidObjectCfg | DeformableObjectCfg = MISSING
     green_cube: RigidObjectCfg | DeformableObjectCfg = MISSING
+    
     # Table
     table = AssetBaseCfg(
         prim_path="{ENV_REGEX_NS}/Table",
@@ -68,16 +69,16 @@ class ObjectTableSceneCfg(InteractiveSceneCfg):
     )
 
     # sensors
-    camera = CameraCfg(
+    overhead_camera = CameraCfg(
         prim_path="{ENV_REGEX_NS}/OverheadCamera",
         update_period=0.1,  # Keep update rate the same
         height=480,  # Keep resolution the same
         width=640,
-        data_types=["rgb", "distance_to_image_plane"],
+        data_types=["rgb"],
         spawn=sim_utils.PinholeCameraCfg(
-            focal_length=24.0,
-            focus_distance=400.0,
-            horizontal_aperture=20.955,
+            focal_length=35.0,
+            focus_distance=200.0,
+            horizontal_aperture=15,
             clipping_range=(0.1, 1.0e5),
         ),
         offset=CameraCfg.OffsetCfg(
@@ -86,8 +87,6 @@ class ObjectTableSceneCfg(InteractiveSceneCfg):
             convention="opengl",
         ),
     )
-
-
 
 
 ##
@@ -108,8 +107,6 @@ class CommandsCfg:
             pos_x=(0.4, 0.6), pos_y=(-0.25, 0.25), pos_z=(0.25, 0.5), roll=(0.0, 0.0), pitch=(0.0, 0.0), yaw=(0.0, 0.0)
         ),
     )
-
-
 
 
 @configclass
@@ -146,7 +143,6 @@ class ObservationsCfg:
 @configclass
 class EventCfg:
     """Configuration for events."""
-
     reset_all = EventTerm(func=mdp.reset_scene_to_default, mode="reset")
 
     reset_object_position = EventTerm(
