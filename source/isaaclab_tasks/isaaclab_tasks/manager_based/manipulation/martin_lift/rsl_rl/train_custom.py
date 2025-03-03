@@ -152,6 +152,25 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
     else:
         print("[WARNING] No cubes detected in the initial image!")
 
+
+
+    # TRANSFORM DETECTED IMAGE COORDS INTO REAL WORLD CORDS
+    # Path to detected image coordinates
+
+    # Fixed table height
+    table_height = 0.05  # Cube Z offset for being placed on the table with respect to the robot arm, also placed on the table
+
+    # Compute real-world positions dynamically
+    real_world_positions = image_to_world_fixed_height(wrapped_env, coords_path, table_height)
+
+    # Save real-world positions to a JSON file
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    real_coords_path = os.path.join(base_dir, "real_coordinates.json")
+    os.makedirs(os.path.dirname(real_coords_path) or ".", exist_ok=True)
+    with open(real_coords_path, "w") as f:
+        json.dump(real_world_positions, f, indent=4)  # Use indent=4 for readable JSON
+    print(f"[INFO] Real-world cube coordinates saved to {real_coords_path}")
+
     # create runner from rsl-rl
     runner = OnPolicyRunner(wrapped_env, agent_cfg.to_dict(), log_dir=log_dir, device=agent_cfg.device)
     # write git state to logs
@@ -250,6 +269,71 @@ def process_with_owlvit(image_path):
     save_boxed_image(image_np, object_locations, boxed_image_path)
 
     return object_locations
+
+def image_to_world_fixed_height(wrapped_env, image_coords_path, table_height):
+    """
+    Convert image pixel coordinates to real-world 3D positions assuming a fixed table height.
+    
+    Parameters:
+    - wrapped_env: The wrapped IsaacLab simulation environment.
+    - image_coords_path (str): Path to JSON file with image coordinates.
+    - table_height (float): Fixed height of the table where cubes are placed.
+
+    Returns:
+    - real_world_positions (dict): 3D positions of cubes in IsaacLab.
+    """
+
+    # Unwrap the RslRlVecEnvWrapper to access the underlying Isaac Lab environment
+    underlying_env = wrapped_env.unwrapped
+    if not hasattr(underlying_env, "scene"):
+        print("[ERROR] Underlying environment has no scene attribute!")
+        return {}
+
+    # Retrieve the overhead camera from the scene
+    camera: Camera = underlying_env.scene["overhead_camera"]
+    if camera is None:
+        print("[ERROR] Overhead camera not found in scene!")
+        return {}
+
+    # Get camera intrinsics dynamically
+    intrinsic_matrix = camera.data.intrinsic_matrices.cpu().numpy()[0]  # Extract 3x3 intrinsics matrix
+    fx, fy = intrinsic_matrix[0, 0], intrinsic_matrix[1, 1]  # Focal lengths
+    cx, cy = intrinsic_matrix[0, 2], intrinsic_matrix[1, 2]  # Principal point
+
+    # Get camera extrinsics (position & rotation)
+    camera_pos = camera.data.pos_w.cpu().numpy()[0]  # Camera world position (x, y, z)
+    camera_quat = camera.data.quat_w_ros.cpu().numpy()[0]  # Camera rotation (x, y, z, w)
+
+    # Load detected image coordinates from JSON file
+    with open(image_coords_path, "r") as f:
+        image_coords = json.load(f)
+
+    # Set fixed Z coordinate (table height)
+    Z_fixed = table_height
+
+    # Compute real-world positions
+    real_world_positions = {}
+
+    for cube_name, data in image_coords.items():
+        # Extract image pixel center
+        x_img, y_img = data["center"]
+
+        # Normalize pixel coordinates
+        x_norm = (x_img - cx) / fx
+        y_norm = (y_img - cy) / fy
+
+        # Compute real-world X, Y coordinates (assuming Z = table height)
+        X_world = camera_pos[0] + x_norm * (camera_pos[2] - Z_fixed)
+        Y_world = camera_pos[1] + y_norm * (camera_pos[2] - Z_fixed)
+
+        # Store the computed world coordinates
+        real_world_positions[cube_name] = {
+            "position": [X_world, Y_world, Z_fixed],  # Fixed Z-coordinate
+            "confidence": data["confidence"],
+        }
+
+    return real_world_positions
+
 
 def save_boxed_image(image_np, object_locations, save_path):
     """Draws bounding boxes on the image and saves it."""
