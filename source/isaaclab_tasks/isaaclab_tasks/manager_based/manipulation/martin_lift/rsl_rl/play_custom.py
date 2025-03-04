@@ -35,7 +35,7 @@ parser.add_argument(
 )
 
 parser.add_argument("--real-time", action="store_true", default=False, help="Run in real-time, if possible.")
-parser.add_argument("--object", type=str, default=None, help="Specify the object to pick up (e.g., 'red' or 'green')")
+parser.add_argument("--object", type=str, default="red_cube", help="Object to target (e.g., 'red cube', 'green cube')")
 # append RSL-RL cli arguments
 cli_args.add_rsl_rl_args(parser)
 # append AppLauncher cli args
@@ -178,15 +178,14 @@ def main():
     policy = ppo_runner.get_inference_policy(device=env.unwrapped.device)
 
     # Inject object coordinates before reset
+    env_cfg.scene.object = args_cli.object.lower().replace(" ", "_")
+
     target_coords = get_real_coordinates(args_cli.object)
     print(f"[INFO] Setting object position to {target_coords.cpu().numpy()}")
+    env.unwrapped.scene[env_cfg.scene.object].set_root_state(pos=target_coords, rot=torch.tensor([1.0, 0.0, 0.0, 0.0], device=env.unwrapped.sim.device))
 
-    robot_pos = env.unwrapped.scene["robot"].data.root_pos_w[:, :3]  # Get robot's base position
-    robot_rot = env.unwrapped.scene["robot"].data.root_state_w[:, 3:7]  # Get robot's rotation
-    print(f"[DEBUG] Robot Base Position: {robot_pos}, Rotation: {robot_rot}")
-    # OVERRIDE CUBE POSITION WITH THE ONE DETECTED IN IMAGE!!!
-    env.unwrapped.command_manager._commands["object_pose"] = target_coords  # Inject position before reset
-    print(env.unwrapped.command_manager._commands["object_pose"])
+    env.target_cube_coords = target_coords  # Set for observation
+    print(f"[INFO] {args_cli.object} position set to: {target_coords.cpu().numpy()}")
 
     # export policy to onnx/jit
     export_model_dir = os.path.join(os.path.dirname(resume_path), "exported")
@@ -265,6 +264,7 @@ def save_initial_photo(env, file_path):
     img.save(file_path, quality=95)
     print(f"[INFO] Initial training image saved at {file_path}")
 
+# TODO: UPDATE THIS TO also WORK WITH MANY ENVIRONMENTS (num_envs > 1)
 def process_with_owlvit(image_path):
     """Process the image with OWL-ViT to detect cube coordinates."""
     # Load the processor and model
@@ -282,11 +282,11 @@ def process_with_owlvit(image_path):
 
     # Post-process to get bounding boxes and scores
     target_sizes = torch.Tensor([image.size[::-1]])  # [height, width]
-    results = processor.post_process_object_detection(outputs, threshold=0.005, target_sizes=target_sizes)[0]
+    results = processor.post_process_object_detection(outputs, threshold=0.0025, target_sizes=target_sizes)[0]
 
     object_locations = {}
     for score, label, box in zip(results["scores"], results["labels"], results["boxes"]):
-        if score > 0.005:  # Confidence threshold
+        if score > 0.0025:  # Confidence threshold
             label_name = target_labels[label.item()]
             box_coords = box.tolist()  # [x_min, y_min, x_max, y_max]
             object_locations[label_name] = {

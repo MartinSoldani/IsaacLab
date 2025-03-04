@@ -43,7 +43,7 @@ class FrankaCubeLiftEnvCfg(LiftEnvCfg):
             close_command_expr={"panda_finger_.*": 0.0},
         )
         # Set the body name for the end effector
-        self.commands.object_pose.body_name = "panda_hand"
+        # self.commands.object_pose.body_name = "panda_hand"
 
         # TODO NOT NEEDED RIGHT NOW # Generate random positions for the cubes (ensuring they do not overlap)
         # min_distance = 0.15  # Minimum allowed distance between cubes
@@ -76,7 +76,7 @@ class FrankaCubeLiftEnvCfg(LiftEnvCfg):
             init_state=RigidObjectCfg.InitialStateCfg(pos=red_cube_position, rot=[1, 0, 0, 0]),
             spawn=UsdFileCfg(
                 usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/Blocks/red_block.usd",
-                scale=(1, 1, 1),
+                scale=(0.8, 0.8, 0.8),
                 rigid_props=RigidBodyPropertiesCfg(
                     solver_position_iteration_count=16,
                     solver_velocity_iteration_count=1,
@@ -94,7 +94,7 @@ class FrankaCubeLiftEnvCfg(LiftEnvCfg):
             init_state=RigidObjectCfg.InitialStateCfg(pos=green_cube_position, rot=[1, 0, 0, 0]),
             spawn=UsdFileCfg(
                 usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/Blocks/blue_block.usd",
-                scale=(1, 1, 1),
+                scale=(0.8, 0.8, 0.8),
                 rigid_props=RigidBodyPropertiesCfg(
                     solver_position_iteration_count=16,
                     solver_velocity_iteration_count=1,
